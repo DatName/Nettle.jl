@@ -43,6 +43,13 @@ function digest!(state::HMACState)
     return digest
 end
 
+function digest!(out::Vector{UInt8}, state::HMACState)
+    resize!(out, state.hash_type.digest_size)
+    ccall((:nettle_hmac_digest,libnettle), Cvoid, (Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid}, Csize_t,
+        Ptr{UInt8}), state.outer, state.inner, state.state, state.hash_type.ptr, sizeof(out), out)
+    return out
+end
+
 # Take a digest, and convert it to a printable hex representation
 hexdigest!(state::HMACState) = bytes2hex(digest!(state))
 
