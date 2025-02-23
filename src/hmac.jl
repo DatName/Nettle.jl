@@ -25,9 +25,15 @@ function HMACState(name::String, key)
     outer = Vector{UInt8}(undef, hash_type.context_size)
     inner = Vector{UInt8}(undef, hash_type.context_size)
     state = Vector{UInt8}(undef, hash_type.context_size)
+    out = HMACState(hash_type, outer, inner, state)
+    set_key(out, key)
+
+    return out
+end
+
+function set_key(state::HMACState, key)
     ccall((:nettle_hmac_set_key,libnettle), Cvoid, (Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Ptr{Cvoid},Csize_t,Ptr{UInt8}),
-        outer, inner, state, hash_type.ptr, sizeof(key), key)
-    return HMACState(hash_type, outer, inner, state)
+        state.outer, state.inner, state.state, state.hash_type.ptr, sizeof(key), key)
 end
 
 function update!(state::HMACState, data)
